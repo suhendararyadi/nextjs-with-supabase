@@ -1,3 +1,4 @@
+// File app/dashboard/page.tsx
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -14,8 +15,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 
 export default async function DashboardPage() {
-  // Buat cookie store
-  const cookieStore = cookies();
+  // Buat cookie store dan gunakan await
+  const cookieStore = await cookies();
   
   // Gunakan createServerClient dari @supabase/ssr
   const supabase = createServerClient(
