@@ -2,8 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
   try {
     // Create an unmodified response
     let response = NextResponse.next({
@@ -36,23 +34,23 @@ export const updateSession = async (request: NextRequest) => {
     );
 
     // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
     const user = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+    // protected routes - tambahkan dashboard sebagai rute terproteksi
+    if ((request.nextUrl.pathname.startsWith("/protected") || 
+         request.nextUrl.pathname.startsWith("/dashboard")) && 
+        user.error) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
+    // Redirect user yang sudah login ke dashboard saat mengakses halaman utama
     if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/protected", request.url));
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return response;
   } catch (e) {
     // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
     return NextResponse.next({
       request: {
         headers: request.headers,
