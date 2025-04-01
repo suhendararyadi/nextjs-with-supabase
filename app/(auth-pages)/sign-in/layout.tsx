@@ -1,10 +1,16 @@
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import "../globals.css";
 
 const geistSans = Geist({
   display: "swap",
   subsets: ["latin"],
 });
+
+export const metadata = {
+  title: "Authentication",
+  description: "Authentication pages",
+};
 
 export default function AuthLayout({
   children,
