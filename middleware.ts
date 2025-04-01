@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     requestUrl.pathname.startsWith('/sign-up') ||
     requestUrl.pathname.startsWith('/forgot-password')
   )) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/protected', request.url));
   }
 
   return response;
