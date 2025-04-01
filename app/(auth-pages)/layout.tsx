@@ -1,9 +1,34 @@
-export default async function Layout({
+import { Geist } from "next/font/google";
+import { ThemeProvider } from "next-themes";
+import "../globals.css";
+
+const geistSans = Geist({
+  display: "swap",
+  subsets: ["latin"],
+});
+
+export const metadata = {
+  title: "Authentication",
+  description: "Authentication pages",
+};
+
+export default function AuthLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <div className="max-w-7xl flex flex-col gap-12 items-start">{children}</div>
+    <html lang="en" className={geistSans.className} suppressHydrationWarning>
+      <body className="bg-background text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
