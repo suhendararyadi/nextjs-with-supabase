@@ -6,7 +6,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export default function LoginLayout({
+export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
