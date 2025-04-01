@@ -1,38 +1,82 @@
-import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
-import { createClient } from "@/utils/supabase/server";
-import { InfoIcon } from "lucide-react";
+// File app/dashboard/page.tsx
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
-export default async function ProtectedPage() {
-  const supabase = await createClient();
+export default async function DashboardPage() {
+  // Buat cookie store dan gunakan await
+  const cookieStore = await cookies();
+  
+  // Gunakan createServerClient dari @supabase/ssr
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          cookieStore.set(name, "", { ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/sign-in");
+  // Periksa sesi
+  const { data } = await supabase.auth.getSession();
+  
+  // Redirect jika tidak ada sesi
+  if (!data.session) {
+    redirect("/sign-in");
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12">
-      <div className="w-full">
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <InfoIcon size="16" strokeWidth={2} />
-          This is a protected page that you can only see as an authenticated
-          user
+    <SidebarProvider>
+      <div className="grid min-h-screen w-full md:grid-cols-[auto_1fr]">
+        <AppSidebar />
+        <div className="flex flex-col">
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </header>
+            <div className="flex flex-1 flex-col gap-4 p-4">
+              <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                <div className="aspect-video rounded-xl bg-muted/50" />
+                <div className="aspect-video rounded-xl bg-muted/50" />
+                <div className="aspect-video rounded-xl bg-muted/50" />
+              </div>
+              <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+            </div>
+          </SidebarInset>
         </div>
       </div>
-      <div className="flex flex-col gap-2 items-start">
-        <h2 className="font-bold text-2xl mb-4">Your user details</h2>
-        <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-          {JSON.stringify(user, null, 2)}
-        </pre>
-      </div>
-      <div>
-        <h2 className="font-bold text-2xl mb-4">Next steps</h2>
-        <FetchDataSteps />
-      </div>
-    </div>
+    </SidebarProvider>
   );
 }
