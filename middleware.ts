@@ -14,6 +14,10 @@ export async function middleware(request: NextRequest) {
   const supabaseSessionCookie = response.cookies.get('sb-session');
   const hasActiveSession = !!supabaseSessionCookie?.value;
   
+  // Tambahkan pathname ke header untuk digunakan dalam layout
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', requestUrl.pathname);
+
   // Jika tidak ada session dan mencoba akses dashboard, redirect ke sign-in
   if (!hasActiveSession && isDashboardRoute) {
     const redirectUrl = new URL('/sign-in', request.url);
@@ -30,7 +34,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/protected', request.url));
   }
 
-  return response;
+  // Salin header ke response
+  const finalResponse = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  // Salin cookie dan header dari response asli
+  response.headers.forEach((value, key) => {
+    finalResponse.headers.set(key, value);
+  });
+  
+  response.cookies.getAll().forEach((cookie) => {
+    finalResponse.cookies.set(cookie.name, cookie.value, cookie);
+  });
+
+  return finalResponse;
 }
 
 export const config = {

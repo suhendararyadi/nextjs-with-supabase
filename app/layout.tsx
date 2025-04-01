@@ -1,4 +1,3 @@
-// DeployButton removed
 import { EnvVarWarning } from "@/components/env-var-warning";
 import HeaderAuth from "@/components/header-auth";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -7,6 +6,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
+import { headers } from "next/headers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -23,11 +23,37 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Check if the current path is an auth page
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAuthPage = pathname.includes("/sign-in") || 
+                    pathname.includes("/sign-up") || 
+                    pathname.includes("/forgot-password");
+
+  // If it's an auth page, render without header and footer
+  if (isAuthPage) {
+    return (
+      <html lang="en" className={geistSans.className} suppressHydrationWarning>
+        <body className="bg-background text-foreground">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  }
+
+  // Otherwise, render with header and footer
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
